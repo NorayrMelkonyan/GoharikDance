@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dance Studio - Admin Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f6f9;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            margin: 0;
+            color: #333;
+            letter-spacing: 2px;
+        }
+        .main-container {
+            display: flex;
+            gap: 20px;
+        }
+        /* Sidebar Filters */
+        .sidebar {
+            width: 250px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            align-self: flex-start;
+        }
+        .sidebar h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        .filter-btn {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 8px;
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: left;
+            font-weight: bold;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        .sidebar-divider {
+            border: none;
+            border-top: 1px solid #eee;
+            margin: 12px 0;
+        }
+        .btn-payments-list {
+            background: #17a2b8;
+            color: white;
+            border-color: #17a2b8;
+        }
+        .btn-payments-list:hover {
+            background: #138496;
+            border-color: #138496;
+        }
+        /* Content Area */
+        .content {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .content-header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        /* Action Buttons */
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-add { background: #28a745; color: white; }
+        .btn-group { background: #6610f2; color: white; }
+        .btn-close-month { background: #dc3545; color: white; }
+        .btn-save { background: #17a2b8; color: white; }
+        .btn-info { background: #ffc107; color: #333; }
+        .btn-delete { background: #bd2130; color: white; border-radius: 50%; width: 30px; height: 30px; padding: 0; }
+
+        /* Children List/Table */
+        .child-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .child-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+            min-width: 200px;
+        }
+        .child-name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .assign-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #eef4ff;
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid #d5e3ff;
+        }
+        .assign-group select { min-width: 170px; }
+        .history-text {
+            font-size: 11px;
+            color: #666;
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Payment status select colors */
+        .pay-select {
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 6px;
+            color: white;
+            cursor: pointer;
+        }
+        .pay-select.unpaid {
+            background-color: #dc3545;
+        }
+        .pay-select.paid {
+            background-color: #28a745;
+        }
+        .pay-select option {
+            color: #333;
+            background: white;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .close-modal {
+            position: absolute;
+            top: 10px; right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .hidden { display: none !important; }
+        .info-table { width: 100%; border-collapse: collapse; }
+        .info-table td { padding: 6px 4px; border-bottom: 1px solid #eee; vertical-align: top; }
+        .info-table td:first-child { font-weight: bold; color: #555; width: 40%; }
+        #groupList li { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #eee; gap: 8px; }
+        #groupList .btn-delete { width: 24px; height: 24px; font-size: 12px; flex-shrink: 0; }
+        #groupList .group-info { flex: 1; }
+        #groupList .group-label { font-weight: bold; }
+        #groupList .group-price { font-size: 12px; color: #17a2b8; font-weight: bold; }
+        #groupList .btn-edit-price { background: #ffc107; color: #333; width: 24px; height: 24px; font-size: 12px; border: none; border-radius: 50%; cursor: pointer; flex-shrink: 0; }
+        .btn-income-list { background: #6f42c1; color: white; border-color: #6f42c1; }
+        .btn-income-list:hover { background: #5a32a3; border-color: #5a32a3; }
+        #incomeList { list-style: none; padding: 0; margin: 0; }
+        #incomeList li { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; gap: 10px; flex-wrap: wrap; }
+        .income-group-name { font-weight: bold; }
+        .income-group-meta { font-size: 12px; color: #999; font-weight: normal; }
+        .income-total { color: #28a745; font-weight: bold; white-space: nowrap; }
+        #incomeGrandTotal { font-size: 16px; font-weight: bold; margin-top: 12px; padding-top: 12px; border-top: 2px solid #eee; text-align: right; color: #28a745; }
+
+        /* Payments list modal */
+        .payments-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .payments-filters select {
+            flex: 1;
+            min-width: 140px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #paymentsList {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 420px;
+            overflow-y: auto;
+        }
+        #paymentsList li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .payment-name {
+            font-weight: bold;
+        }
+        .payment-group {
+            color: #999;
+            font-size: 12px;
+            font-weight: normal;
+        }
+        .payment-date-badge {
+            color: #28a745;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .payment-date-badge.unpaid-badge {
+            color: #dc3545;
+        }
+        #paymentsCount {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Dance Studio</h1>
+    <div style="display:flex; gap:10px; align-items:center;">
+        <a href="https://norayrmelkonyan.github.io/cash/" target="_blank" rel="noopener" class="btn" style="background:#6f42c1; color:white; text-decoration:none; display:inline-block;">💰 Դրամարկղ</a>
+        <button class="btn btn-close-month" id="closeMonthBtn">Փակել Ամիսը</button>
+    </div>
+</header>
+
+<div class="main-container">
+    <div class="sidebar">
+        <h3>Ֆիլտրեր</h3>
+        <button class="filter-btn active" data-filter="all">Բոլորը</button>
+        <button class="filter-btn" data-filter="unassigned">Չնշանակված</button>
+        <div id="groupFilters"></div>
+        <hr class="sidebar-divider">
+        <button class="filter-btn btn-payments-list" id="openPaymentsModalBtn">✅ Վճարածների Ցուցակ</button>
+        <button class="filter-btn btn-income-list" id="openIncomeModalBtn">💵 Եկամուտ ըստ Խմբի</button>
+    </div>
+
+    <div class="content">
+        <div class="content-header">
+            <h2>Երեխաների Ցուցակ (<span id="childCount">0</span>)</h2>
+            <div class="content-header-actions">
+                <button class="btn btn-group" id="openGroupModalBtn">+ Նոր Խումբ</button>
+                <button class="btn btn-add" id="openAddModalBtn">+ Ավելացնել Երեխա</button>
+            </div>
+        </div>
+        <div id="childrenList">
+        </div>
+    </div>
+</div>
+
+<div class="modal hidden" id="addModal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeAddModalBtn">&times;</span>
+        <h3>Ավելացնել Նոր Երեխա</h3>
+        <form id="registrationForm">
+            <div class="form-group"><label>Երեխայի Անուն *</label><input type="text" id="childName" required placeholder="Անուն"></div>
+            <div class="form-group"><label>Երեխայի Ազգանուն *</label><input type="text" id="childSurname" required placeholder="Ազգանուն"></div>
+            <div class="form-group"><label>Ծննդյան Ամսաթիվ *</label><input type="date" id="childDob" required></div>
+            <div class="form-group"><label>Ծնողի Անուն Ազգանուն *</label><input type="text" id="parentName" required placeholder="Անուն Ազգանուն"></div>
+            <div class="form-group"><label>Հեռախոսահամար *</label><input type="tel" id="phone" required placeholder="+374 XXXXXXXX"></div>
+            <div class="form-group"><label>Հեռախոսահամար 2</label><input type="tel" id="phone2" placeholder="+374 XXXXXXXX"></div>
+            <div class="form-group"><label>Հասցե *</label><input type="text" id="address" required placeholder="Հասցե"></div>
+
+            <div class="form-group">
+                <label>Խումբ</label>
+                <select id="addGroup">
+                    <option value="">-- Չնշանակված --</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-add" id="submitBtn">Պահպանել Բազայում</button>
+        </form>
+    </div>
+</div>
+
+<div class="modal hidden" id="historyModal">
+    <div class="modal-content" style="max-width: 600px;">
+        <span class="close-modal" id="closeHistoryModalBtn">&times;</span>
+        <h3 id="historyModalTitle">Վճարների Պատմություն</h3>
+        <div style="margin-top: 15px;">
+            <div style="background: #f8f9fa; padding: 10px; border-radius: 6px;">
+                <h4>💰 Վճարումներ</h4>
+                <ul id="modalPaymentList" style="padding-left: 20px; margin: 0;"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal hidden" id="infoModal">
+    <div class="modal-content" style="max-width: 500px;">
+        <span class="close-modal" id="closeInfoModalBtn">&times;</span>
+        <h3 id="infoModalTitle">Ծնողի Գրանցած Տվյալները</h3>
+        <table class="info-table" id="infoModalTable"></table>
+    </div>
+</div>
+
+<div class="modal hidden" id="groupModal">
+    <div class="modal-content" style="max-width: 450px;">
+        <span class="close-modal" id="closeGroupModalBtn">&times;</span>
+        <h3>Խմբերի Կառավարում</h3>
+        <div class="form-group">
+            <label>Նոր Խմբի Անվանում</label>
+            <input type="text" id="newGroupLabel" placeholder="Օր. Արտաշատ - Dance Studio - 15:00">
+        </div>
+        <div class="form-group">
+            <label>Ամսական Վարձի Գումար (֏)</label>
+            <input type="number" id="newGroupPrice" placeholder="Օր. 15000" min="0" step="500">
+        </div>
+        <button class="btn btn-add" id="addGroupBtn" style="width:100%;">+ Ավելացնել Խումբ</button>
+        <hr>
+        <h4>Առկա Խմբեր</h4>
+        <ul id="groupList" style="list-style:none; padding:0; margin:0;"></ul>
+    </div>
+</div>
+
+<div class="modal hidden" id="paymentsModal">
+    <div class="modal-content" style="max-width: 650px;">
+        <span class="close-modal" id="closePaymentsModalBtn">&times;</span>
+        <h3>✅ Վճարումների Ցուցակ</h3>
+        <div class="payments-filters">
+            <select id="paymentsGroupFilter">
+                <option value="all">Բոլոր Խմբերը</option>
+            </select>
+            <select id="paymentsMonthFilter">
+                <option value="all">Բոլոր Ամիսները</option>
+            </select>
+            <select id="paymentsStatusFilter">
+                <option value="all">Բոլորը</option>
+                <option value="paid">Միայն Վճարած</option>
+                <option value="unpaid">Միայն Չվճարած</option>
+            </select>
+        </div>
+        <div id="paymentsCount"></div>
+        <ul id="paymentsList"></ul>
+    </div>
+</div>
+
+<div class="modal hidden" id="incomeModal">
+    <div class="modal-content" style="max-width: 650px;">
+        <span class="close-modal" id="closeIncomeModalBtn">&times;</span>
+        <h3>💵 Եկամուտ ըստ Խմբի</h3>
+        <div class="payments-filters">
+            <select id="incomeMonthFilter">
+                <option value="all">Բոլոր Ամիսները</option>
+            </select>
+        </div>
+        <ul id="incomeList"></ul>
+        <div id="incomeGrandTotal"></div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    const firebaseConfig = {
+        apiKey: "AIzaSyC6O59wtedoLbeUCF5mF4Dkz4a2u-OK8Aw",
+        authDomain: "goharik-dance.firebaseapp.com",
+        projectId: "goharik-dance",
+        storageBucket: "goharik-dance.firebasestorage.app",
+        messagingSenderId: "996113060132",
+        appId: "1:996113060132:web:d05d0610e4ba58ad50a3b1",
+        measurementId: "G-JJPYZBPQTT"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let allStudents = [];
+    let groupsCache = []; // { id, label }
+    let currentFilter = "all";
+
+    // Էլեմենտներ
+    const childrenList = document.getElementById('childrenList');
+    const childCountText = document.getElementById('childCount');
+    const addModal = document.getElementById('addModal');
+    const addGroupSelect = document.getElementById('addGroup');
+    const groupFilters = document.getElementById('groupFilters');
+    const groupModal = document.getElementById('groupModal');
+    const groupList = document.getElementById('groupList');
+    const paymentsModal = document.getElementById('paymentsModal');
+    const paymentsGroupFilter = document.getElementById('paymentsGroupFilter');
+    const paymentsMonthFilter = document.getElementById('paymentsMonthFilter');
+    const paymentsStatusFilter = document.getElementById('paymentsStatusFilter');
+    const paymentsList = document.getElementById('paymentsList');
+    const paymentsCount = document.getElementById('paymentsCount');
+    const incomeModal = document.getElementById('incomeModal');
+    const incomeMonthFilter = document.getElementById('incomeMonthFilter');
+    const incomeList = document.getElementById('incomeList');
+    const incomeGrandTotal = document.getElementById('incomeGrandTotal');
+
+    const MONTH_NAMES_HY = ['Հունվար','Փետրվար','Մարտ','Ապրիլ','Մայիս','Հունիս','Հուլիս','Օգոստոս','Սեպտեմբեր','Հոկտեմբեր','Նոյեմբեր','Դեկտեմբեր'];
+
+    // --- Խմբեր (groups / class-times) ---
+    async function loadGroups() {
+        const querySnapshot = await getDocs(collection(db, "groups"));
+        groupsCache = [];
+        querySnapshot.forEach((d) => {
+            groupsCache.push({ id: d.id, ...d.data() });
+        });
+        groupsCache.sort((a, b) => (a.label || '').localeCompare(b.label || '', 'hy'));
+        renderSidebarFilters();
+        populateAddGroupSelect();
+    }
+
+    function renderSidebarFilters() {
+        groupFilters.innerHTML = '';
+        groupsCache.forEach(g => {
+            const btn = document.createElement('button');
+            btn.className = 'filter-btn' + (currentFilter === g.id ? ' active' : '');
+            btn.setAttribute('data-filter', g.id);
+            btn.textContent = g.label;
+            groupFilters.appendChild(btn);
+        });
+    }
+
+    function populateAddGroupSelect() {
+        addGroupSelect.innerHTML = '<option value="">-- Չնշանակված --</option>';
+        groupsCache.forEach(g => {
+            const o = document.createElement('option');
+            o.value = g.id;
+            o.textContent = g.label;
+            addGroupSelect.appendChild(o);
+        });
+    }
+
+    function renderGroupList() {
+        groupList.innerHTML = '';
+        if (groupsCache.length === 0) {
+            groupList.innerHTML = "<li style='color:#777; border:none;'>Խմբեր դեռ չկան</li>";
+            return;
+        }
+        groupsCache.forEach(g => {
+            const li = document.createElement('li');
+
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'group-info';
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'group-label';
+            labelDiv.textContent = g.label;
+            const priceDiv = document.createElement('div');
+            priceDiv.className = 'group-price';
+            priceDiv.textContent = g.price ? `${Number(g.price).toLocaleString('hy-AM')} ֏ / ամիս` : 'Գումարը նշված չէ';
+            infoDiv.appendChild(labelDiv);
+            infoDiv.appendChild(priceDiv);
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'btn-edit-price';
+            editBtn.textContent = '✎';
+            editBtn.title = 'Խմբագրել';
+            editBtn.addEventListener('click', async () => {
+                const newLabel = prompt('Խմբի անվանում.', g.label);
+                if (newLabel === null) return;
+                const newPriceStr = prompt('Ամսական վարձի գումար (֏).', g.price || 0);
+                if (newPriceStr === null) return;
+                const newPrice = parseFloat(newPriceStr) || 0;
+                await updateDoc(doc(db, "groups", g.id), { label: newLabel.trim() || g.label, price: newPrice });
+                await loadGroups();
+                renderGroupList();
+                renderList();
+            });
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'btn btn-delete';
+            delBtn.textContent = 'X';
+            delBtn.addEventListener('click', async () => {
+                if (confirm(`Ջնջե՞լ "${g.label}" խումբը:`)) {
+                    await deleteDoc(doc(db, "groups", g.id));
+                    await loadGroups();
+                    renderGroupList();
+                    renderList();
+                }
+            });
+
+            li.appendChild(infoDiv);
+            li.appendChild(editBtn);
+            li.appendChild(delBtn);
+            groupList.appendChild(li);
+        });
+    }
+
+    document.getElementById('openGroupModalBtn').addEventListener('click', () => {
+        renderGroupList();
+        groupModal.classList.remove('hidden');
+    });
+    document.getElementById('closeGroupModalBtn').addEventListener('click', () => groupModal.classList.add('hidden'));
+
+    document.getElementById('addGroupBtn').addEventListener('click', async () => {
+        const input = document.getElementById('newGroupLabel');
+        const priceInput = document.getElementById('newGroupPrice');
+        const label = input.value.trim();
+        const price = parseFloat(priceInput.value) || 0;
+        if (!label) {
+            alert('Գրեք խմբի անվանումը');
+            return;
+        }
+        await addDoc(collection(db, "groups"), { label, price, createdAt: new Date() });
+        input.value = '';
+        priceInput.value = '';
+        await loadGroups();
+        renderGroupList();
+    });
+
+    // Բեռնել տվյալները Firestore-ից
+    async function loadData() {
+        childrenList.innerHTML = "Բեռնվում է...";
+        allStudents = [];
+        const querySnapshot = await getDocs(collection(db, "registrations"));
+        querySnapshot.forEach((doc) => {
+            allStudents.push({ id: doc.id, ...doc.data() });
+        });
+        renderList();
+    }
+
+    // Ցուցակի արտածում ըստ ֆիլտրի
+    function renderList() {
+        childrenList.innerHTML = "";
+        let filtered = allStudents.filter(student => {
+            if (currentFilter === "all") return true;
+            if (currentFilter === "unassigned") return !student.groupId;
+            return student.groupId === currentFilter;
+        });
+
+        childCountText.textContent = filtered.length;
+
+        filtered.forEach(student => {
+            const isPaid = student.isPaid || false;
+            const paymentHistory = student.payments || [];
+            const groupLabel = student.groupLabel || '';
+
+            const row = document.createElement('div');
+            row.className = 'child-row';
+            row.innerHTML = `
+                <div class="child-info">
+                    <div>
+                        <div class="child-name">${student.childName} ${student.childSurname}</div>
+                        <div id="meta-${student.id}" style="font-size:12px; color:#777;">
+                            ${groupLabel || 'Խումբը դեռ նշանակված չէ'}
+                        </div>
+                    </div>
+                </div>
+                <div class="controls">
+                    <div class="assign-group">
+                        <select id="assign-${student.id}">
+                            <option value="">-- Խումբ --</option>
+                            ${groupsCache.map(g => `<option value="${g.id}" ${student.groupId === g.id ? 'selected' : ''}>${g.label}</option>`).join('')}
+                        </select>
+                    </div>
+
+                    <select id="pay-${student.id}" class="pay-select ${isPaid ? 'paid' : 'unpaid'}">
+                        <option value="false" ${!isPaid ? 'selected' : ''}>Չվճարված</option>
+                        <option value="true" ${isPaid ? 'selected' : ''}>Վճարված</option>
+                    </select>
+
+                    <button class="btn btn-info" id="info-${student.id}">Տվյալներ</button>
+                    <button class="btn" style="background: #6c757d; color: white;" id="hist-${student.id}">Պատմություն</button>
+                    
+                    <div class="history-text">
+                        Վճարներ: ${paymentHistory.join(', ') || 'Չկա'}
+                    </div>
+
+                    <button class="btn btn-save" id="save-${student.id}">Պահպանել</button>
+                    <button class="btn btn-delete" id="del-${student.id}">X</button>
+                </div>
+            `;
+            childrenList.appendChild(row);
+
+            // Վճարման select-ի գույնը փոխվում է անմիջապես ընտրության պահին
+            const paySelectEl = document.getElementById(`pay-${student.id}`);
+            paySelectEl.addEventListener('change', () => {
+                const nowPaid = paySelectEl.value === "true";
+                paySelectEl.classList.toggle('paid', nowPaid);
+                paySelectEl.classList.toggle('unpaid', !nowPaid);
+            });
+
+            // Ինֆո Կոճակ` ցույց է տալիս ծնողի գրանցած ԲՈԼՈՐ տվյալները
+            document.getElementById(`info-${student.id}`).addEventListener('click', () => {
+                const infoModal = document.getElementById('infoModal');
+                document.getElementById('infoModalTitle').textContent = `${student.childName} ${student.childSurname} - Տվյալներ`;
+                const table = document.getElementById('infoModalTable');
+                const createdAtText = student.createdAt ? new Date(student.createdAt.seconds * 1000).toLocaleDateString() : '—';
+                const rows = [
+                    ['Երեխայի անուն', student.childName || '—'],
+                    ['Երեխայի ազգանուն', student.childSurname || '—'],
+                    ['Ծննդյան օր', student.childDob || '—'],
+                    ['Ծնողի անուն ազգանուն', student.parentName || '—'],
+                    ['Հեռախոս 1', student.phone || '—'],
+                    ['Հեռախոս 2', student.phone2 || '—'],
+                    ['Հասցե', student.address || '—'],
+                    ['Խումբ', student.groupLabel || 'Դեռ նշանակված չէ'],
+                    ['Գրանցվել է', createdAtText]
+                ];
+                table.innerHTML = rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+                infoModal.classList.remove('hidden');
+            });
+
+            // Պատմություն Կոճակ
+            document.getElementById(`hist-${student.id}`).addEventListener('click', () => {
+                const hModal = document.getElementById('historyModal');
+                document.getElementById('historyModalTitle').textContent = `${student.childName} ${student.childSurname} - Պատմություն`;
+
+                const payUl = document.getElementById('modalPaymentList');
+                payUl.innerHTML = "";
+
+                if(paymentHistory.length === 0) {
+                    payUl.innerHTML = "<li style='color:#777;'>Չկա</li>";
+                } else {
+                    paymentHistory.forEach(pay => {
+                        let li = document.createElement('li');
+                        li.textContent = `✅ ${pay}`;
+                        li.style.color = "#28a745";
+                        li.style.fontWeight = "bold";
+                        payUl.appendChild(li);
+                    });
+                }
+
+                hModal.classList.remove('hidden');
+            });
+
+            // Պահպանել տվյալ երեխայի կարգավիճակը (խումբ + վճար)
+            document.getElementById(`save-${student.id}`).addEventListener('click', async (e) => {
+                const btnSave = e.target;
+                btnSave.disabled = true;
+                const oldText = btnSave.textContent;
+                btnSave.textContent = "...";
+
+                const payStatus = document.getElementById(`pay-${student.id}`).value === "true";
+                const today = new Date().toLocaleDateString('hy-AM');
+
+                const assignSelect = document.getElementById(`assign-${student.id}`);
+                const newGroupId = assignSelect.value || null;
+                const newGroupObj = groupsCache.find(g => g.id === newGroupId);
+                const newGroupLabel = newGroupObj ? newGroupObj.label : '';
+
+                let updatedPayments = [...paymentHistory];
+
+                if (payStatus && !isPaid) {
+                    updatedPayments.push(today);
+                }
+
+                try {
+                    const docRef = doc(db, "registrations", student.id);
+                    await updateDoc(docRef, {
+                        isPaid: payStatus,
+                        payments: updatedPayments,
+                        groupId: newGroupId,
+                        groupLabel: newGroupLabel
+                    });
+
+                    // ԼՈԿԱԼ ԹԱՐՄԱՑՈՒՄ
+                    student.isPaid = payStatus;
+                    student.payments = updatedPayments;
+                    student.groupId = newGroupId;
+                    student.groupLabel = newGroupLabel;
+
+                    // Թարմացնում ենք .history-text դիվի պարունակությունը
+                    const row = btnSave.closest('.child-row');
+                    if (row) {
+                        const historyDiv = row.querySelector('.history-text');
+                        if (historyDiv) {
+                            historyDiv.innerHTML = `Վճարներ: ${updatedPayments.join(', ') || 'Չկա'}`;
+                        }
+                        const metaDiv = document.getElementById(`meta-${student.id}`);
+                        if (metaDiv) {
+                            metaDiv.textContent = newGroupLabel || 'Խումբը դեռ նշանակված չէ';
+                        }
+                    }
+
+                    // Ապահովում ենք որ վճարման select-ի գույնը ճիշտ է պահպանումից հետո
+                    paySelectEl.classList.toggle('paid', payStatus);
+                    paySelectEl.classList.toggle('unpaid', !payStatus);
+
+                    alert("Պահպանվեց:");
+                } catch (err) {
+                    alert("Սխալ պահպանելիս: " + err.message);
+                } finally {
+                    btnSave.disabled = false;
+                    btnSave.textContent = oldText;
+                }
+            });
+
+            // Ջնջել Բազայից
+            document.getElementById(`del-${student.id}`).addEventListener('click', async () => {
+                if (confirm(`Վստա՞հ եք, որ ուզում եք ջնջել ${student.childName}-ին բազայից:`)) {
+                    await deleteDoc(doc(db, "registrations", student.id));
+                    loadData();
+                }
+            });
+        });
+    }
+
+    // Ֆիլտրերի սեղմման իրադարձություն (delegation, քանի որ խմբային ֆիլտրերը դինամիկ են)
+    document.querySelector('.sidebar').addEventListener('click', (e) => {
+        const btn = e.target.closest('.filter-btn');
+        if (!btn || btn.id === 'openPaymentsModalBtn') return;
+        document.querySelectorAll('.filter-btn').forEach(b => {
+            if (b.id !== 'openPaymentsModalBtn') b.classList.remove('active');
+        });
+        btn.classList.add('active');
+        currentFilter = btn.getAttribute('data-filter');
+        renderList();
+    });
+
+    // Փակել Ամիսը (Բոլորին սարքում է Չվճարված)
+    document.getElementById('closeMonthBtn').addEventListener('click', async () => {
+        if (confirm("Վստա՞հ եք, որ ուզում եք փակել ամիսը: Բոլոր հաճախորդների կարգավիճակը կդառնա ՉՎՃԱՐՎԱԾ:")) {
+            for (let student of allStudents) {
+                if (student.isPaid) {
+                    await updateDoc(doc(db, "registrations", student.id), { isPaid: false });
+                }
+            }
+            alert("Ամիսը փակված է:");
+            loadData();
+        }
+    });
+
+    // Մոդալի բացել/փակելը
+    document.getElementById('openAddModalBtn').addEventListener('click', () => {
+        populateAddGroupSelect();
+        addModal.classList.remove('hidden');
+    });
+    document.getElementById('closeAddModalBtn').addEventListener('click', () => addModal.classList.add('hidden'));
+    document.getElementById('closeHistoryModalBtn').addEventListener('click', () => document.getElementById('historyModal').classList.add('hidden'));
+    document.getElementById('closeInfoModalBtn').addEventListener('click', () => document.getElementById('infoModal').classList.add('hidden'));
+
+    // --- Վճարումների Ցուցակ (վճարած + չվճարած, ըստ ամսվա և խմբի) ---
+
+    function getMonthKeyFromDateStr(dateStr) {
+        if (!dateStr) return null;
+        const parts = dateStr.trim().split('.');
+        if (parts.length !== 3) return null;
+        const [d, m, y] = parts;
+        if (!y || !m) return null;
+        return `${y}-${m.padStart(2, '0')}`;
+    }
+
+    function monthKeyToLabel(key) {
+        const [year, month] = key.split('-');
+        const idx = parseInt(month, 10) - 1;
+        const name = MONTH_NAMES_HY[idx] || month;
+        return `${name} ${year}`;
+    }
+
+    // Հավաքում ենք բոլոր վճարումները՝ յուրաքանչյուր վճարման օրվա համար մեկ առանձին տող (✅ Վճարած)
+    function getPaidEntries() {
+        const entries = [];
+        allStudents.forEach(student => {
+            const payments = student.payments || [];
+            payments.forEach(dateStr => {
+                entries.push({
+                    isPaid: true,
+                    name: `${student.childName || ''} ${student.childSurname || ''}`.trim(),
+                    date: dateStr,
+                    monthKey: getMonthKeyFromDateStr(dateStr),
+                    groupId: student.groupId || '',
+                    groupLabel: student.groupLabel || 'Առանց խմբի'
+                });
+            });
+        });
+        return entries;
+    }
+
+    // Ընթացիկ ամսում ՉՎՃԱՐԱԾ երեխաների ցուցակ (isPaid === false)
+    function getUnpaidEntries() {
+        const entries = [];
+        allStudents.forEach(student => {
+            if (!student.isPaid) {
+                entries.push({
+                    isPaid: false,
+                    name: `${student.childName || ''} ${student.childSurname || ''}`.trim(),
+                    date: null,
+                    monthKey: null,
+                    groupId: student.groupId || '',
+                    groupLabel: student.groupLabel || 'Առանց խմբի'
+                });
+            }
+        });
+        return entries;
+    }
+
+    function populatePaymentsFilters() {
+        // Խմբերի ֆիլտր
+        paymentsGroupFilter.innerHTML = '<option value="all">Բոլոր Խմբերը</option>';
+        groupsCache.forEach(g => {
+            const o = document.createElement('option');
+            o.value = g.id;
+            o.textContent = g.label;
+            paymentsGroupFilter.appendChild(o);
+        });
+
+        // Ամիսների ֆիլտր (միայն այն ամիսները, որտեղ իրական վճարումներ կան)
+        const paidEntries = getPaidEntries();
+        const monthKeys = [...new Set(paidEntries.map(e => e.monthKey).filter(Boolean))];
+        monthKeys.sort().reverse();
+
+        paymentsMonthFilter.innerHTML = '<option value="all">Բոլոր Ամիսները</option>';
+        monthKeys.forEach(key => {
+            const o = document.createElement('option');
+            o.value = key;
+            o.textContent = monthKeyToLabel(key);
+            paymentsMonthFilter.appendChild(o);
+        });
+    }
+
+    function renderPaymentsList() {
+        const groupVal = paymentsGroupFilter.value;
+        const monthVal = paymentsMonthFilter.value;
+        const statusVal = paymentsStatusFilter.value;
+
+        let paidEntries = getPaidEntries();
+        let unpaidEntries = getUnpaidEntries();
+
+        if (groupVal !== 'all') {
+            paidEntries = paidEntries.filter(e => e.groupId === groupVal);
+            unpaidEntries = unpaidEntries.filter(e => e.groupId === groupVal);
+        }
+        if (monthVal !== 'all') {
+            paidEntries = paidEntries.filter(e => e.monthKey === monthVal);
+            unpaidEntries = [];
+        }
+        if (statusVal === 'paid') {
+            unpaidEntries = [];
+        }
+        if (statusVal === 'unpaid') {
+            paidEntries = [];
+        }
+
+        paidEntries.sort((a, b) => {
+            const da = (a.date || '').split('.').reverse().join('-');
+            const db_ = (b.date || '').split('.').reverse().join('-');
+            return db_.localeCompare(da);
+        });
+        unpaidEntries.sort((a, b) => a.name.localeCompare(b.name, 'hy'));
+
+        const entries = [...unpaidEntries, ...paidEntries];
+
+        paymentsCount.textContent = `Ընդամենը՝ ${entries.length} (✅ Վճարած՝ ${paidEntries.length}, ❌ Չվճարած՝ ${unpaidEntries.length})`;
+        paymentsList.innerHTML = '';
+
+        if (entries.length === 0) {
+            paymentsList.innerHTML = "<li style='color:#777; justify-content:center;'>Տվյալներ չեն գտնվել</li>";
+            return;
+        }
+
+        entries.forEach(e => {
+            const li = document.createElement('li');
+            const badge = e.isPaid
+                ? `<span class="payment-date-badge">✅ ${e.date}</span>`
+                : `<span class="payment-date-badge unpaid-badge">❌ Չվճարված</span>`;
+            li.innerHTML = `
+                <span class="payment-name">${e.name} <span class="payment-group">(${e.groupLabel})</span></span>
+                ${badge}
+            `;
+            paymentsList.appendChild(li);
+        });
+    }
+
+    document.getElementById('openPaymentsModalBtn').addEventListener('click', () => {
+        populatePaymentsFilters();
+        renderPaymentsList();
+        paymentsModal.classList.remove('hidden');
+    });
+    document.getElementById('closePaymentsModalBtn').addEventListener('click', () => paymentsModal.classList.add('hidden'));
+    paymentsGroupFilter.addEventListener('change', renderPaymentsList);
+    paymentsMonthFilter.addEventListener('change', renderPaymentsList);
+    paymentsStatusFilter.addEventListener('change', renderPaymentsList);
+
+    // --- Եկամուտ ըստ Խմբի ---
+
+    function populateIncomeFilters() {
+        const paidEntries = getPaidEntries();
+        const monthKeys = [...new Set(paidEntries.map(e => e.monthKey).filter(Boolean))];
+        monthKeys.sort().reverse();
+
+        incomeMonthFilter.innerHTML = '<option value="all">Բոլոր Ամիսները</option>';
+        monthKeys.forEach(key => {
+            const o = document.createElement('option');
+            o.value = key;
+            o.textContent = monthKeyToLabel(key);
+            incomeMonthFilter.appendChild(o);
+        });
+    }
+
+    function calcIncomeByGroup(monthVal) {
+        let paidEntries = getPaidEntries();
+        if (monthVal !== 'all') {
+            paidEntries = paidEntries.filter(e => e.monthKey === monthVal);
+        }
+
+        const byGroup = {};
+        paidEntries.forEach(e => {
+            const key = e.groupId || '__none__';
+            if (!byGroup[key]) {
+                byGroup[key] = { groupId: e.groupId, label: e.groupLabel, count: 0 };
+            }
+            byGroup[key].count += 1;
+        });
+
+        const rows = Object.values(byGroup).map(row => {
+            const groupObj = groupsCache.find(g => g.id === row.groupId);
+            const price = groupObj ? (Number(groupObj.price) || 0) : 0;
+            return {
+                label: row.label,
+                count: row.count,
+                price,
+                total: price * row.count,
+                hasPrice: !!(groupObj && groupObj.price)
+            };
+        });
+
+        rows.sort((a, b) => b.total - a.total);
+        return rows;
+    }
+
+    function renderIncomeList() {
+        const monthVal = incomeMonthFilter.value;
+        const rows = calcIncomeByGroup(monthVal);
+
+        incomeList.innerHTML = '';
+        if (rows.length === 0) {
+            incomeList.innerHTML = "<li style='color:#777; justify-content:center;'>Վճարումներ չեն գտնվել</li>";
+            incomeGrandTotal.textContent = '';
+            return;
+        }
+
+        let grandTotal = 0;
+        rows.forEach(row => {
+            grandTotal += row.total;
+            const li = document.createElement('li');
+            const priceNote = row.hasPrice
+                ? `${Number(row.price).toLocaleString('hy-AM')} ֏ × ${row.count}`
+                : `Գումարը նշված չէ (${row.count} վճարում)`;
+            li.innerHTML = `
+                <span class="income-group-name">${row.label} <span class="income-group-meta">(${priceNote})</span></span>
+                <span class="income-total">${Number(row.total).toLocaleString('hy-AM')} ֏</span>
+            `;
+            incomeList.appendChild(li);
+        });
+
+        incomeGrandTotal.textContent = `Ընդհանուր Եկամուտ՝ ${Number(grandTotal).toLocaleString('hy-AM')} ֏`;
+    }
+
+    document.getElementById('openIncomeModalBtn').addEventListener('click', () => {
+        populateIncomeFilters();
+        renderIncomeList();
+        incomeModal.classList.remove('hidden');
+    });
+    document.getElementById('closeIncomeModalBtn').addEventListener('click', () => incomeModal.classList.add('hidden'));
+    incomeMonthFilter.addEventListener('change', renderIncomeList);
+
+    // Նոր երեխայի գրանցում մոդալից (Firestore)
+    document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Բեռնվում է...";
+
+        try {
+            const selectedGroupId = addGroupSelect.value || null;
+            const selectedGroupObj = groupsCache.find(g => g.id === selectedGroupId);
+            const selectedGroupLabel = selectedGroupObj ? selectedGroupObj.label : '';
+
+            const formData = {
+                childName: document.getElementById('childName').value,
+                childSurname: document.getElementById('childSurname').value,
+                childDob: document.getElementById('childDob').value,
+                parentName: document.getElementById('parentName').value,
+                phone: document.getElementById('phone').value,
+                phone2: document.getElementById('phone2').value,
+                address: document.getElementById('address').value,
+                groupId: selectedGroupId,
+                groupLabel: selectedGroupLabel,
+                isPaid: false,
+                payments: [],
+                createdAt: new Date()
+            };
+
+            await addDoc(collection(db, "registrations"), formData);
+            alert("Երեխան հաջողությամբ ավելացվեց բազա:");
+            addModal.classList.add('hidden');
+            document.getElementById('registrationForm').reset();
+            loadData();
+        } catch (err) {
+            alert("Սխալ: " + err.message);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Պահպանել Բազայում";
+        }
+    });
+
+    // Առաջին բեռնումը
+    async function init() {
+        await loadGroups();
+        await loadData();
+    }
+    init();
+</script>
+</body>
+</html>
